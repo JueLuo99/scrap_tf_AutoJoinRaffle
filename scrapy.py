@@ -1,15 +1,15 @@
 from selenium import webdriver
 import json
+import os
 import time
 
-
-# driver = webdriver.Chrome()
 opt = webdriver.ChromeOptions()
-opt.set_headless()
-opt.add_argument('--no-sandbox')
-opt.add_argument('--disable-gpu')
-opt.add_argument('--hide-scrollbars') #隐藏滚动条, 应对一些特殊页面
-# 用的是谷歌浏览器
+# 根据arguments文件动态跟新chrome的启动参数
+if os.path.exists(os.path.splitext(__file__)[0]+".arguments"):
+    with open(os.path.exists(os.path.splitext(__file__)[0]+".arguments"), 'r') as args:
+        for arg in [i.strip() for i in args.readlines()]:
+            opt.add_argument(opt)
+            
 driver = webdriver.Chrome(options=opt)
 cookies = [{
         'domain': 'scrap.tf',
