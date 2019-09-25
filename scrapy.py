@@ -3,17 +3,23 @@ import json
 import time
 
 
-driver = webdriver.Chrome()
-
+# driver = webdriver.Chrome()
+opt = webdriver.ChromeOptions()
+opt.set_headless()
+opt.add_argument('--no-sandbox')
+opt.add_argument('--disable-gpu')
+opt.add_argument('--hide-scrollbars') #隐藏滚动条, 应对一些特殊页面
+# 用的是谷歌浏览器
+driver = webdriver.Chrome(options=opt)
 cookies = [{
         'domain': 'scrap.tf',
         'expiry': 1573527943,
         'httpOnly': True,
         'name': 'scr_session',
         'path': '/', 'secure': True,
-        # 'value': 'bG9naW5fcmVkaXJlY3R8czoxNzoiaHR0cHM6Ly9zY3JhcC50Zi8iO2lkfGk6MjQ1NTk1Mjt0b2tlbnxzOjY0OiIxYTkxNDg0ZDVjNTRiZDcxYWZmZDg2NmUxNzI0NjQ4MDYyN2M5NzFmNDRmOTIyYjIzNTQwMGRkNjJhZTIwNDYxIjtmcmVlMnBsYXl8YjoxO3ByaXZhdGVWYWxpZGF0aW9ufGk6MTU2OTI5NzUyOTtiNjQ5OTIzNjY4OWE4MGY0MzFiNmViNjc0ZmVlNDg3MTQ2ZGViYTVmODgyZTg1NzE1NzdmNjlmZjllZjNhNWMxY2MzMjViY2M2MDhkODQzOTBmYzY3ZThmYzY3OWNmN2U0ZjkwMWZhZGViOTljMTFkMDkyZDhlOWEyMTkyYTU4YQ%3D%3D'
+        'value': 'bG9naW5fcmVkaXJlY3R8czoxNzoiaHR0cHM6Ly9zY3JhcC50Zi8iO2lkfGk6MjQ1NTk1Mjt0b2tlbnxzOjY0OiIxYTkxNDg0ZDVjNTRiZDcxYWZmZDg2NmUxNzI0NjQ4MDYyN2M5NzFmNDRmOTIyYjIzNTQwMGRkNjJhZTIwNDYxIjtmcmVlMnBsYXl8YjoxO3ByaXZhdGVWYWxpZGF0aW9ufGk6MTU2OTI5NzUyOTtiNjQ5OTIzNjY4OWE4MGY0MzFiNmViNjc0ZmVlNDg3MTQ2ZGViYTVmODgyZTg1NzE1NzdmNjlmZjllZjNhNWMxY2MzMjViY2M2MDhkODQzOTBmYzY3ZThmYzY3OWNmN2U0ZjkwMWZhZGViOTljMTFkMDkyZDhlOWEyMTkyYTU4YQ%3D%3D'
         # 大号
-        'value': 'bG9naW5fcmVkaXJlY3R8czoxNzoiaHR0cHM6Ly9zY3JhcC50Zi8iO2lkfGk6MTg0MzYwMDt0b2tlbnxzOjY0OiIwYjAyZWFmMDM1NzU0NDExNGY5ODYxNmNlMWM4MDMyMDQ0OGZmNjk2OTk2ZDZkMmRiNDdiZGFjNjM0NzBmYmE1IjtmcmVlMnBsYXl8YjowO3ByaXZhdGVWYWxpZGF0aW9ufGk6MTU2OTMwNzI5Mzs2MzBkNmRmNThhMzViZTUwNTg3MzY2ZTFkZDBhMjliOGJmMTVhMTgxNGE2NWY2MDBmNGQzM2YwNDdlZWM2ZWQ4YjcyZGVkMDFjNzdiM2I2ODg0NzU3YjZiMmFkMDQ5MjA5ZTA5ZjYzNjFmNGNlYjk2OTIyZDE0ODllNWM3ODcxMg%3D%3D'
+        #'value': 'bG9naW5fcmVkaXJlY3R8czoxNzoiaHR0cHM6Ly9zY3JhcC50Zi8iO2lkfGk6MTg0MzYwMDt0b2tlbnxzOjY0OiIwYjAyZWFmMDM1NzU0NDExNGY5ODYxNmNlMWM4MDMyMDQ0OGZmNjk2OTk2ZDZkMmRiNDdiZGFjNjM0NzBmYmE1IjtmcmVlMnBsYXl8YjowO3ByaXZhdGVWYWxpZGF0aW9ufGk6MTU2OTMwNzI5Mzs2MzBkNmRmNThhMzViZTUwNTg3MzY2ZTFkZDBhMjliOGJmMTVhMTgxNGE2NWY2MDBmNGQzM2YwNDdlZWM2ZWQ4YjcyZGVkMDFjNzdiM2I2ODg0NzU3YjZiMmFkMDQ5MjA5ZTA5ZjYzNjFmNGNlYjk2OTIyZDE0ODllNWM3ODcxMg%3D%3D'
         # 小号
         # 'value': 'bG9naW5fcmVkaXJlY3R8czoxNzoiaHR0cHM6Ly9zY3JhcC50Zi8iO2lkfGk6MTkwMzA2NDt0b2tlbnxzOjY0OiIwMDM1YzY2ZDc2ZDdhYTI4YWEyM2JhNmNhMTJiZTVlNTM4Nzk3MjJlNGE3MThjNjc0MTBiZDE5MTg0ZjE0NDllIjtmcmVlMnBsYXl8YjowO3ByaXZhdGVWYWxpZGF0aW9ufGk6MTU2OTI5NDM0MDs3YjU1NWE3OTUyYWMxZjhjYmIxYWRlMDYzOWMwZjM4NjJkYTA4MWJjODI5OWU0MzY5ZTZiMWMyZjc1NmQyYjQ4MTdmNmZkOTdlODk4YjY1MTQ5OTUwOTE2YzgxM2JmZmZhNTYwYjg0Mzc2Y2RhN2NjZGY1M2M1OTQzNzkzMmZiMg%3D%3D'
     }, {
