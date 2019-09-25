@@ -1,3 +1,5 @@
---no-sandbox
+--headless
 --disable-gpu
+--no-sandbox
 --hide-scrollbars
+log-level=3

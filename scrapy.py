@@ -1,16 +1,40 @@
-from selenium import webdriver
-import json
 import os
 import time
+import json
+import random
+from selenium import webdriver
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+
+# 不等待模式
+nowait = False
+
+def sleepBetween(min,max):
+    t = random.randint(min,max)
+    t = t / 1000.0
+    print("sleep {}s".format(t))
+    time.sleep(t)
+
+# 懒加载模式，不等待页面加载完毕
+capa = DesiredCapabilities.CHROME
+if not nowait:
+    capa["pageLoadStrategy"] = "none"
 
 opt = webdriver.ChromeOptions()
 # 根据arguments文件动态跟新chrome的启动参数
 if os.path.exists(os.path.splitext(__file__)[0]+".arguments"):
-    with open(os.path.exists(os.path.splitext(__file__)[0]+".arguments"), 'r') as args:
+    with open(os.path.splitext(__file__)[0]+".arguments", 'r') as args:
         for arg in [i.strip() for i in args.readlines()]:
-            opt.add_argument(opt)
+            if arg.strip() != "":
+                print("加载参数[{}]".format(arg))
+                opt.add_argument(arg)
+                
             
-driver = webdriver.Chrome(options=opt)
+driver = webdriver.Chrome(options=opt,desired_capabilities=capa)
+wait = WebDriverWait(driver, 30)
 cookies = [{
         'domain': 'scrap.tf',
         'expiry': 1573527943,
@@ -73,29 +97,39 @@ cookies = [{
     }]
     
 driver.get("https://scrap.tf/raffles/")
+wait.until(EC.presence_of_element_located((By.TAG_NAME, "title")))
 print("正在前往 " + driver.title)
 for cookie in cookies:
-    # cookie.pop("domain")
     driver.add_cookie(cookie)
 print("正在导入 cookies")
-# driver.add_cookie(cookie)
 driver.get("https://scrap.tf/raffles/")
 print()
-# f1 = open('d:/cookie.txt')
-# cookie = f1.read()
-# cookie = json.loads(cookie)
 while True:
     print("正在获取 raffles 列表")
     # raffleList = driver.find_elements_by_class_name("raffle-name")
-    rafflePage = driver.find_element_by_xpath("//div[@class='panel-raffle ' and not(contains(@class,'raffle-entered'))]")
+    rafflePage = None
+    while True:
+        try:
+            wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='panel-raffle ' and not(contains(@class,'raffle-entered'))]")))
+            rafflePage = driver.find_element_by_xpath("//div[@class='panel-raffle ' and not(contains(@class,'raffle-entered'))]")
+            break
+        except:
+            print("正在调整位置")
+            js = "document.documentElement.scrollTop=document.documentElement.scrollHeight"
+            driver.execute_script(js)
+    driver.get_screenshot_as_file(os.path.splitext(__file__)[0]+".png")
     rafflePage = rafflePage.find_element_by_tag_name("div").find_element_by_tag_name("div").find_element_by_tag_name("a")
+    action = ActionChains(driver)
+    action.move_to_element(rafflePage).perform()
     # //div[contains(@class,'panel-raffle') and not(contains(@class,'raffle-entered'))]
     print("正在加入 " + rafflePage.get_attribute("href"))
     rafflePage.click()
+    wait.until(EC.presence_of_element_located((By.ID, "raffle-enter")))
+    driver.execute_script("window.stop();")
     driver.find_element_by_id("raffle-enter").click()
-    time.sleep(10)
+    sleepBetween(5000,10000)
     driver.back()
-    time.sleep(10)
+    sleepBetween(5000,10000)
 # print(type(raffleList))
 # print("raffleList => " + str(raffleList))
 
